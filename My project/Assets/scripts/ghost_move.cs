@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ghost_move : MonoBehaviour
@@ -9,57 +8,83 @@ public class ghost_move : MonoBehaviour
     public float chaseDistance = 5f;
     public Transform pointA;
     public Transform pointB;
+    public float viewDistance = 4f;   
+    public float loseDistance = 7f;   
+
+    private bool isChasing = false;
+
+
     private Transform currentTarget;
     private Transform player;
-    private float fixedY;
-  
-    // Start is called before the first frame update
+
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
-        currentTarget = pointA;
-        fixedY = transform.position.y;
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null)
+            player = p.transform;
+        else
+            Debug.LogError("没找到 Tag=Player 的物体");
+
+        if (pointA != null && pointB != null)
+            currentTarget = pointA;
+        else
+            Debug.LogError("PointA / PointB 没有设置");
     }
 
-    // Update is called once per frame
     void Update()
     {
-        float distanceToPlayer = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z),
-            new Vector3(player.position.x, 0, player.position.z));
-        if (distanceToPlayer <= chaseDistance)
+
+        if (player == null || currentTarget == null) return;
+
+        float distanceToPlayer =
+            Vector2.Distance(transform.position, player.position);
+
+        
+        if (!isChasing && distanceToPlayer <= viewDistance)
         {
-            MoveFlat(player.position);
+            isChasing = true;
+        }
+
+       
+        if (isChasing)
+        {
+            Move2D(player.position);
+
+           
+            if (distanceToPlayer >= loseDistance)
+            {
+                isChasing = false;
+                currentTarget = pointA; 
+            }
         }
         else
         {
-            MoveFlat(currentTarget.position);
-            if (FlatDistance(transform.position, currentTarget.position) < 0.2f) 
+            
+            Move2D(currentTarget.position);
+
+            if (Vector2.Distance(transform.position, currentTarget.position) < 0.1f)
             {
                 currentTarget = currentTarget == pointA ? pointB : pointA;
             }
         }
     }
-    void MoveFlat(Vector3 targetPos)
+
+    void Move2D(Vector2 targetPos)
     {
-        Vector3 target = new Vector3(
-            targetPos.x,
-            fixedY,
-            targetPos.z
-        );
-        Vector3 dir = (target - transform.position).normalized;
-        transform.position += dir * speed * Time.deltaTime;
-        if (dir != Vector3.zero)
+        Vector2 dir =
+            (targetPos - (Vector2)transform.position).normalized;
+
+        transform.position +=
+            (Vector3)(dir * speed * Time.deltaTime);
+
+       
+        if (dir.x != 0)
         {
-            transform.rotation = Quaternion.LookRotation(
-                new Vector3(dir.x, 0, dir.z)
+            transform.localScale = new Vector3(
+                dir.x > 0 ? 1 : -1,
+                1,
+                1
             );
         }
-    }
-    float FlatDistance(Vector3 a, Vector3 b)
-    {
-        return Vector3.Distance(
-            new Vector3(a.x, 0, a.z),
-            new Vector3(b.x, 0, b.z)
-        );
     }
 }
