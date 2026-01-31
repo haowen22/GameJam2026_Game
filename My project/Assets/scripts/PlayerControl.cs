@@ -15,8 +15,12 @@ public class PlayerControl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        this.rigidbody2D = gameObject.GetComponentInParent<Rigidbody2D>();
-        this.anim = gameObject.GetComponent<Animator>();
+         rigidbody2D = GetComponent<Rigidbody2D>();
+        this.anim = GetComponentInChildren<Animator>();
+            moveSpeed = baseMoveSpeed;
+        
+
+        moveSpeed = baseMoveSpeed;
     }
 
     // Update is called once per frame
