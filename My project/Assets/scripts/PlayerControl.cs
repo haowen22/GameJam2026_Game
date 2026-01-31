@@ -7,7 +7,11 @@ public class PlayerControl : MonoBehaviour
     private Rigidbody2D rigidbody2D;
     private Animator anim;
 
+    public float baseMoveSpeed = 3f;
+    [HideInInspector]
     public float moveSpeed;
+    Coroutine speedRoutine;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,5 +34,18 @@ public class PlayerControl : MonoBehaviour
 
         bool isRunning = (Mathf.Abs(horizontal) > 0.1f) || (Mathf.Abs(vertical) > 0.1f);
         anim.SetBool("run 0", isRunning);
+    }
+    public void BoostSpeed(float multiplier, float duration)
+    {
+        if (speedRoutine != null)
+            StopCoroutine(speedRoutine);
+
+        speedRoutine = StartCoroutine(SpeedBoost(multiplier, duration));
+    }
+    IEnumerator SpeedBoost(float multiplier, float duration)
+    {
+        moveSpeed = baseMoveSpeed * multiplier;
+        yield return new WaitForSeconds(duration);
+        moveSpeed = baseMoveSpeed;
     }
 }
